@@ -1,0 +1,49 @@
+version: "3"
+
+services:
+  mariadb:
+    image: mariadb
+    container_name: mariadb
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_DATABASE}
+    volumes:
+      - mariaDb:/var/lib/mysql
+    networks:
+      - aws
+
+  back:
+    build:
+      context: backend-nodejs
+      dockerfile: Dockerfile
+    restart: always
+    container_name: back
+    depends_on:
+      - "mariadb"
+    ports:
+      - 8080:8080
+    networks:
+      - aws
+
+  front:
+    build:
+      context: angular
+      dockerfile: Dockerfile
+    restart: always
+    container_name: front
+    depends_on:
+      - "back"
+    ports:
+      - ${PORT_FRONT}:80
+    networks:
+      - aws
+
+volumes:
+  mariaDb:
+
+networks:
+  aws:
